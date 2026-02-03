@@ -48,8 +48,6 @@ These values provide a balanced and dynamic audio experience suitable for a home
     ```bash
     pip install -r requirements.txt
     ```
-    
-**Important:** Before first use, open `audio_leveler.py` and replace `YOUR_USERNAME` in the `GITHUB_REPO_URL` variable with your actual GitHub username.
 
 ## Usage
 
