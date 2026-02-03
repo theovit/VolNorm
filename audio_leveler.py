@@ -18,7 +18,7 @@ import urllib.request
 
 # --- Configuration ---
 VERSION = "1.0.0"
-GITHUB_REPO_URL = "https://api.github.com/repos/YOUR_USERNAME/Media-Audio-Leveler/releases/latest" # Replace with your repo
+GITHUB_REPO_URL = "https://api.github.com/repos/theovit/VolNorm/releases/latest" # Replace with your repo
 LOUDNESS_TARGETS = {
     "I": -24.0,
     "LRA": 13.0,
