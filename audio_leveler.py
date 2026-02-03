@@ -173,10 +173,16 @@ def process_file(file_path):
         if not output_format:
             logging.error(f"Unsupported file extension: {file_path.suffix}")
             return "failed", 0
+
+        # Preserve the original audio codec
+        original_audio_codec = audio_streams_before[0]['codec_name'] if audio_streams_before else None
+        if not original_audio_codec:
+            logging.error(f"Could not determine original audio codec for {file_path.name}")
+            return "failed", 0
             
         ffmpeg_cmd_pass2 = [
             'ffmpeg', '-y', '-hide_banner', '-i', str(file_path),
-            '-map', '0:v', '-map', '0:a', '-c:v', 'copy',
+            '-map', '0:v', '-map', '0:a', '-c:v', 'copy', '-c:a', original_audio_codec,
             '-af', f"loudnorm=I={LOUDNESS_TARGETS['I']}:LRA={LOUDNESS_TARGETS['LRA']}:tp={LOUDNESS_TARGETS['TP']}:measured_I={measured['input_i']}:measured_LRA={measured['input_lra']}:measured_tp={measured['input_tp']}:measured_thresh={measured['input_thresh']}:offset={measured['target_offset']}",
             '-f', output_format,
             str(tmp_path)
