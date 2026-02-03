@@ -1,0 +1,19 @@
+# GitHub Presence
+.venv/
+__pycache__/
+
+# Log files
+*.log
+
+# Media files
+*.mkv
+*.mp4
+*.avi
+*.mov
+*.wmv
+*.flv
+*.webm
+
+# Temporary files
+*.tmp
+*.normalized

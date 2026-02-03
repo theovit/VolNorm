@@ -1,0 +1,2 @@
+# No Python packages are required to run this script.
+# However, FFmpeg (including ffprobe) must be installed and accessible in the system's PATH.
