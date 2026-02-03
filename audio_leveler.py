@@ -109,6 +109,14 @@ def process_file(file_path):
         os.remove(tmp_path)
 
     try:
+        # --- Log Before State ---
+        try:
+            before_info = get_stream_info(file_path)
+            audio_streams_before = [s for s in before_info['streams'] if s['codec_type'] == 'audio']
+            logging.info(f"BEFORE: {json.dumps(audio_streams_before, indent=4)}")
+        except Exception as e:
+            logging.error(f"Could not get 'before' stream info for {file_path.name}: {e}")
+
         # --- Pass 1: Analyze Loudness ---
         logging.info(f"Pass 1: Analyzing '{file_path.name}'")
         start_time = time.time()
@@ -150,6 +158,12 @@ def process_file(file_path):
         if (LOUDNESS_TARGETS['I'] - LOUDNESS_TOLERANCE) <= input_i <= (LOUDNESS_TARGETS['I'] + LOUDNESS_TOLERANCE) and input_lra <= LOUDNESS_TARGETS['LRA']:
             time_saved = time.time() - start_time
             logging.info(f"SKIP: '{file_path.name}' is already within loudness targets. Time saved: {time_saved:.2f}s")
+            try:
+                after_info = get_stream_info(file_path)
+                audio_streams_after = [s for s in after_info['streams'] if s['codec_type'] == 'audio']
+                logging.info(f"AFTER: {json.dumps(audio_streams_after, indent=4)}")
+            except Exception as e:
+                logging.error(f"Could not get 'after' stream info for {file_path.name}: {e}")
             return "skipped", time_saved
 
         # --- Pass 2: Apply Normalization ---
@@ -185,6 +199,14 @@ def process_file(file_path):
         # --- Atomic Swap ---
         logging.info(f"Verification successful. Replacing original file for '{file_path.name}'")
         os.replace(tmp_path, file_path)
+
+        # --- Log After State ---
+        try:
+            after_info = get_stream_info(file_path)
+            audio_streams_after = [s for s in after_info['streams'] if s['codec_type'] == 'audio']
+            logging.info(f"AFTER: {json.dumps(audio_streams_after, indent=4)}")
+        except Exception as e:
+            logging.error(f"Could not get 'after' stream info for {file_path.name}: {e}")
         
         total_time = time.time() - start_time
         logging.info(f"SUCCESS: Processed '{file_path.name}' in {total_time:.2f}s")
