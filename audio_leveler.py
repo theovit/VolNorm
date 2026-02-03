@@ -40,7 +40,7 @@ LOG_FILE = 'leveler.log'
 
 # --- Setup Logging ---
 logging.basicConfig(level=logging.INFO, format=LOG_FORMAT, handlers=[
-    logging.FileHandler(LOG_FILE),
+    logging.FileHandler(LOG_FILE, encoding='utf-8'),
     logging.StreamHandler(sys.stdout)
 ])
 
@@ -85,7 +85,7 @@ def get_stream_info(file_path):
         '-show_streams',
         str(file_path)
     ]
-    result = subprocess.run(command, capture_output=True, text=True, check=True)
+    result = subprocess.run(command, capture_output=True, text=True, check=True, encoding='utf-8')
     return json.loads(result.stdout)
 
 def parse_loudnorm_output(output):
@@ -115,12 +115,12 @@ def process_file(file_path):
         
         ffmpeg_cmd_pass1 = [
             'ffmpeg', '-hide_banner', '-i', str(file_path),
-            '-map', '0', '-c:v', 'copy', '-c:s', 'copy',
+            '-map', '0:v', '-map', '0:a', '-c:v', 'copy',
             '-af', f"loudnorm=I={LOUDNESS_TARGETS['I']}:LRA={LOUDNESS_TARGETS['LRA']}:tp={LOUDNESS_TARGETS['TP']}:print_format=json",
             '-f', 'null', '-'
         ]
         
-        result_pass1 = subprocess.run(ffmpeg_cmd_pass1, capture_output=True, text=True)
+        result_pass1 = subprocess.run(ffmpeg_cmd_pass1, capture_output=True, text=True, encoding='utf-8')
         
         if result_pass1.returncode != 0:
             logging.error(f"FFmpeg Pass 1 failed for {file_path.name}. Error:\n{result_pass1.stderr}")
@@ -162,13 +162,13 @@ def process_file(file_path):
             
         ffmpeg_cmd_pass2 = [
             'ffmpeg', '-y', '-hide_banner', '-i', str(file_path),
-            '-map', '0', '-c:v', 'copy', '-c:s', 'copy',
+            '-map', '0:v', '-map', '0:a', '-c:v', 'copy',
             '-af', f"loudnorm=I={LOUDNESS_TARGETS['I']}:LRA={LOUDNESS_TARGETS['LRA']}:tp={LOUDNESS_TARGETS['TP']}:measured_I={measured['input_i']}:measured_LRA={measured['input_lra']}:measured_tp={measured['input_tp']}:measured_thresh={measured['input_thresh']}:offset={measured['target_offset']}",
             '-f', output_format,
             str(tmp_path)
         ]
         
-        result_pass2 = subprocess.run(ffmpeg_cmd_pass2, capture_output=True, text=True)
+        result_pass2 = subprocess.run(ffmpeg_cmd_pass2, capture_output=True, text=True, encoding='utf-8')
         
         if result_pass2.returncode != 0:
             logging.error(f"FFmpeg Pass 2 failed for {file_path.name}. Error:\n{result_pass2.stderr}")
