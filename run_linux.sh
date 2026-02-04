@@ -27,6 +27,10 @@ if [ -z "$1" ] || [ "$1" == "--help" ] || [ "$1" == "-h" ]; then
     exit 0
 fi
 
+# Debugging - Log environment variables to a temp file
+echo "Sonarr Event: $sonarr_eventtype" >> /tmp/wrapper.log
+echo "Radarr Event: $radarr_eventtype" >> /tmp/wrapper.log
+
 # Handle the Test event from Sonarr/Radarr
 if [ "$sonarr_eventtype" = "Test" ]; then
     SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
@@ -35,6 +39,16 @@ if [ "$sonarr_eventtype" = "Test" ]; then
         PYTHON_CMD="$SCRIPT_DIR/.venv/bin/python"
     fi
     "$PYTHON_CMD" "$SCRIPT_DIR/audio_leveler.py" --arr-test "Sonarr"
+    exit 0
+fi
+
+if [ "$radarr_eventtype" = "Test" ]; then
+    SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+    PYTHON_CMD="python3"
+    if [ -f "$SCRIPT_DIR/.venv/bin/python" ]; then
+        PYTHON_CMD="$SCRIPT_DIR/.venv/bin/python"
+    fi
+    "$PYTHON_CMD" "$SCRIPT_DIR/audio_leveler.py" --arr-test "Radarr"
     exit 0
 fi
 

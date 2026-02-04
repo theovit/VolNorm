@@ -10,6 +10,10 @@ if "%1"=="!h" (goto help)
 if "%1"=="?" (goto help)
 
 
+:: Debugging - Log environment variables to a temp file
+echo Sonarr Event: %sonarr_eventtype% >> C:\Users\Andrew\.gemini\tmp\ac8bc5a5b84159c50864181aa1cb926baae455557a80c01cfde6950793a1f6b2\wrapper.log
+echo Radarr Event: %radarr_eventtype% >> C:\Users\Andrew\.gemini\tmp\ac8bc5a5b84159c50864181aa1cb926baae455557a80c01cfde6950793a1f6b2\wrapper.log
+
 :: Handle the Test event from Sonarr/Radarr
 if "%sonarr_eventtype%"=="Test" (
 	set SCRIPT_DIR=%~dp0
@@ -18,6 +22,16 @@ if "%sonarr_eventtype%"=="Test" (
 		set PYTHON_CMD=%SCRIPT_DIR%.venv\Scripts\python.exe
 	)
 	"%PYTHON_CMD%" "%SCRIPT_DIR%audio_leveler.py" --arr-test "Sonarr"
+    exit /b 0
+)
+
+if "%radarr_eventtype%"=="Test" (
+	set SCRIPT_DIR=%~dp0
+	set PYTHON_CMD=python
+	if exist "%SCRIPT_DIR%.venv\Scripts\python.exe" (
+		set PYTHON_CMD=%SCRIPT_DIR%.venv\Scripts\python.exe
+	)
+	"%PYTHON_CMD%" "%SCRIPT_DIR%audio_leveler.py" --arr-test "Radarr"
     exit /b 0
 )
 
