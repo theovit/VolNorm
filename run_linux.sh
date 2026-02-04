@@ -28,8 +28,13 @@ if [ -z "$1" ] || [ "$1" == "--help" ] || [ "$1" == "-h" ]; then
 fi
 
 # Handle the Test event from Sonarr/Radarr
-if [ "$sonarr_eventtype" = "Test" ] || [ "$radarr_eventtype" = "Test" ]; then
-    echo "Test successful"
+if [ "$sonarr_eventtype" = "Test" ]; then
+    SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+    PYTHON_CMD="python3"
+    if [ -f "$SCRIPT_DIR/.venv/bin/python" ]; then
+        PYTHON_CMD="$SCRIPT_DIR/.venv/bin/python"
+    fi
+    "$PYTHON_CMD" "$SCRIPT_DIR/audio_leveler.py" --arr-test "Sonarr"
     exit 0
 fi
 

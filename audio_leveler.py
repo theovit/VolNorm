@@ -17,7 +17,7 @@ import time
 import urllib.request
 
 # --- Configuration ---
-VERSION = "1.2.0"
+VERSION = "1.2.1"
 GITHUB_REPO_URL = "https://api.github.com/repos/theovit/VolNorm/releases/latest"
 LOUDNESS_TARGETS = {
     "I": -24.0,
@@ -283,8 +283,13 @@ def main():
     parser.add_argument('--cleanup', action='store_true', help='Scan for and remove orphaned temporary files.')
     parser.add_argument('--no-update-check', action='store_true', help='Skip the GitHub update check.')
     parser.add_argument('--update', action='store_true', help='Check for updates and exit.')
+    parser.add_argument('--arr-test', dest='arr_test', type=str, help=argparse.SUPPRESS) # Hidden from help
     
     args = parser.parse_args()
+
+    if args.arr_test:
+        logging.info(f"{args.arr_test} test successful.")
+        sys.exit(0)
 
     if args.update:
         check_for_updates()
@@ -298,10 +303,10 @@ def main():
     # --- Mode Detection ---
     if os.environ.get('sonarr_episodefile_path'):
         file_to_process = os.environ.get('sonarr_episodefile_path')
-        logging.info("Sonarr integration detected.")
+        logging.info(f"Sonarr integration detected. Processing file: {file_to_process}")
     elif os.environ.get('radarr_moviefile_path'):
         file_to_process = os.environ.get('radarr_moviefile_path')
-        logging.info("Radarr integration detected.")
+        logging.info(f"Radarr integration detected. Processing file: {file_to_process}")
     elif args.single_file:
         file_to_process = args.single_file
         logging.info(f"Single file mode: processing '{file_to_process}'")

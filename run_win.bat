@@ -12,7 +12,12 @@ if "%1"=="?" (goto help)
 
 :: Handle the Test event from Sonarr/Radarr
 if "%sonarr_eventtype%"=="Test" (
-    echo Test successful
+	set SCRIPT_DIR=%~dp0
+	set PYTHON_CMD=python
+	if exist "%SCRIPT_DIR%.venv\Scripts\python.exe" (
+		set PYTHON_CMD=%SCRIPT_DIR%.venv\Scripts\python.exe
+	)
+	"%PYTHON_CMD%" "%SCRIPT_DIR%audio_leveler.py" --arr-test "Sonarr"
     exit /b 0
 )
 
