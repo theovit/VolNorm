@@ -222,6 +222,7 @@ def process_file(file_path):
             'ffmpeg', '-y', '-hide_banner', '-i', str(file_path),
             '-map', '0:v', '-map', '0:a', '-c:v', 'copy', '-c:a', original_audio_codec, '-sample_fmt', original_sample_fmt, '-ar', original_sample_rate,
             '-af', f"loudnorm=I={LOUDNESS_TARGETS['I']}:LRA={LOUDNESS_TARGETS['LRA']}:tp={LOUDNESS_TARGETS['TP']}:measured_I={measured['input_i']}:measured_LRA={measured['input_lra']}:measured_tp={measured['input_tp']}:measured_thresh={measured['input_thresh']}:offset={measured['target_offset']}",
+            '-strict', '-2',
             '-f', output_format,
             str(tmp_path)
         ]
