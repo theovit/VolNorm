@@ -17,7 +17,7 @@ import time
 import urllib.request
 
 # --- Configuration ---
-VERSION = "1.1.0"
+VERSION = "1.2.0"
 GITHUB_REPO_URL = "https://api.github.com/repos/theovit/VolNorm/releases/latest"
 LOUDNESS_TARGETS = {
     "I": -24.0,
