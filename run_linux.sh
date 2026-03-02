@@ -2,24 +2,30 @@
 
 # Wrapper script for audio_leveler.py for Sonarr/Radarr on Linux
 
-# Get the directory of this script
-SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+# Ensure the script directory is an absolute path
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
 
-# Set the python command
-PYTHON_CMD="python3"
+# --- Determine Python Interpreter ---
 VENV_PYTHON="$SCRIPT_DIR/.venv/bin/python"
 
-# Verify that the venv exists
-if [ -f "$VENV_PYTHON" ]; then
+if [ -x "$VENV_PYTHON" ]; then
+    # Use the virtual environment's Python if it exists and is executable
     PYTHON_CMD="$VENV_PYTHON"
 else
-    # If venv is missing and we're not in a test environment, exit with an error.
-    # The 'Test' event from *arrs does not require the venv.
-    if [ "$sonarr_eventtype" != "Test" ] && [ "$radarr_eventtype" != "Test" ]; then
-        echo "ERROR: Python virtual environment not found at '$VENV_PYTHON'" >&2
-        echo "Please run the setup script to create the virtual environment." >&2
+    # Fallback to the system's python3
+    PYTHON_CMD=$(command -v python3)
+    if [ ! -x "$PYTHON_CMD" ]; then
+        echo "ERROR: python3 not found in PATH and virtual environment not found at '$VENV_PYTHON'." >&2
         exit 1
     fi
+fi
+
+# If venv is missing and we're not in a test environment, exit with an error.
+# The 'Test' event from *arrs does not require the venv.
+if [ ! -x "$VENV_PYTHON" ] && [ "$sonarr_eventtype" != "Test" ] && [ "$radarr_eventtype" != "Test" ]; then
+    echo "ERROR: Python virtual environment not found at '$VENV_PYTHON'" >&2
+    echo "Please run the setup script to create the virtual environment." >&2
+    exit 1
 fi
 
 # Handle the Test event from Sonarr/Radarr
