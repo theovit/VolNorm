@@ -36,7 +36,7 @@ FORMAT_MAP = {
     '.webm': 'webm'
 }
 LOG_FORMAT = '%(asctime)s - %(levelname)s - %(message)s'
-LOG_FILE = 'leveler.log'
+LOG_FILE = Path(__file__).parent / 'leveler.log'
 
 # --- Setup Logging ---
 logging.basicConfig(level=logging.INFO, format=LOG_FORMAT, handlers=[
