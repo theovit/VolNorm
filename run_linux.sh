@@ -27,13 +27,15 @@ if [ -z "$1" ] || [ "$1" == "--help" ] || [ "$1" == "-h" ]; then
     exit 0
 fi
 
+# Get the directory of this script
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+
 # Debugging - Log environment variables to a temp file
-echo "Sonarr Event: $sonarr_eventtype" >> /tmp/wrapper.log
-echo "Radarr Event: $radarr_eventtype" >> /tmp/wrapper.log
+echo "Sonarr Event: $sonarr_eventtype" >> "$SCRIPT_DIR/wrapper.log"
+echo "Radarr Event: $radarr_eventtype" >> "$SCRIPT_DIR/wrapper.log"
 
 # Handle the Test event from Sonarr/Radarr
 if [ "$sonarr_eventtype" = "Test" ]; then
-    SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
     PYTHON_CMD="python3"
     if [ -f "$SCRIPT_DIR/.venv/bin/python" ]; then
         PYTHON_CMD="$SCRIPT_DIR/.venv/bin/python"
@@ -43,7 +45,6 @@ if [ "$sonarr_eventtype" = "Test" ]; then
 fi
 
 if [ "$radarr_eventtype" = "Test" ]; then
-    SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
     PYTHON_CMD="python3"
     if [ -f "$SCRIPT_DIR/.venv/bin/python" ]; then
         PYTHON_CMD="$SCRIPT_DIR/.venv/bin/python"
@@ -52,8 +53,7 @@ if [ "$radarr_eventtype" = "Test" ]; then
     exit 0
 fi
 
-# Get the directory of this script
-SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+# SCRIPT_DIR is defined at the top of the script
 PYTHON_CMD="python3"
 
 # Check if a venv exists and set the python command accordingly

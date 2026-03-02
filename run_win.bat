@@ -11,8 +11,8 @@ if "%1"=="?" (goto help)
 
 
 :: Debugging - Log environment variables to a temp file
-echo Sonarr Event: %sonarr_eventtype% >> C:\Users\Andrew\.gemini\tmp\ac8bc5a5b84159c50864181aa1cb926baae455557a80c01cfde6950793a1f6b2\wrapper.log
-echo Radarr Event: %radarr_eventtype% >> C:\Users\Andrew\.gemini\tmp\ac8bc5a5b84159c50864181aa1cb926baae455557a80c01cfde6950793a1f6b2\wrapper.log
+echo Sonarr Event: %sonarr_eventtype% >> %~dp0wrapper.log
+echo Radarr Event: %radarr_eventtype% >> %~dp0wrapper.log
 
 :: Handle the Test event from Sonarr/Radarr
 if "%sonarr_eventtype%"=="Test" (
