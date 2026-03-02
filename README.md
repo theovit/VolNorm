@@ -19,7 +19,7 @@ These values provide a balanced and dynamic audio experience suitable for a home
 - **Cross-Platform:** Wrapper scripts for both Windows and Linux.
 - **Stream Preservation:** Video, subtitle, and all other streams are copied without re-encoding.
 - **Atomic Operations:** Uses a temporary file and an atomic `os.replace()` to prevent data corruption.
-- **'Arr Integration:** Automatically detects and processes files when triggered by Sonarr or Radarr.
+- **'Arr Integration (WIP):** Automatically detects and processes files when triggered by Sonarr or Radarr.
 - **Batch Processing:** A `--batch` mode to scan and process your entire library.
 - **Safety & Cleanup:** Includes a `try...finally` block and a `--cleanup` flag to manage temporary files.
 - **Update Checker:** Notifies you when a new version is available on GitHub.
@@ -63,7 +63,7 @@ Use the wrapper scripts to run the audio leveler.
 -   **Windows:** `run_win.bat`
 -   **Linux:** `run_linux.sh`
 
-### Sonarr & Radarr Setup (Custom Script)
+### Sonarr & Radarr Setup (WIP)
 
 1.  Navigate to `Settings > Connect > Add Notification`.
 2.  Select `Custom Script`.

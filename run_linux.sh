@@ -9,7 +9,7 @@ export PATH="$SCRIPT_DIR/bin:$PATH"
 # Venv Enforcement
 PYTHON_CMD="$SCRIPT_DIR/.venv/bin/python"
 
-# Arr Detection & Failure Handling
+# Arr Detection & Failure Handling (WIP)
 if [[ "$sonarr_eventtype" == "Test" || "$radarr_eventtype" == "Test" ]]; then
     if [ ! -x "$PYTHON_CMD" ]; then
         echo "ERROR: Python virtual environment not found at '$PYTHON_CMD'. Please run the setup script." >&2
@@ -38,18 +38,7 @@ if [ -z "$1" ] || [ "$1" == "--help" ] || [ "$1" == "-h" ]; then
     echo "  --update                   Check for updates and exit."
     echo "  --help, -h                 Show this help message."
     echo ""
-    echo "Integration:"
-    echo "  The script auto-detects Sonarr and Radarr environments."
-    echo ""
-    exit 0
-fi
-
-# Execute the python script, passing all arguments.
-"$PYTHON_CMD" "$SCRIPT_DIR/audio_leveler.py" "$@"
--update                   Check for updates and exit."
-    echo "  --help, -h                 Show this help message."
-    echo ""
-    echo "Integration:"
+    echo "Integration (WIP):"
     echo "  The script auto-detects Sonarr and Radarr environments."
     echo ""
     exit 0

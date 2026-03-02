@@ -1,6 +1,6 @@
 @echo off
 
-:: Wrapper script for audio_leveler.py for Sonarr/Radarr on Windows
+:: Wrapper script for audio_leveler.py for Sonarr/Radarr on Windows (WIP)
 
 :: Help Menu
 if "%1"=="" (goto help)
@@ -14,7 +14,7 @@ if "%1"=="?" (goto help)
 echo Sonarr Event: %sonarr_eventtype% >> %~dp0wrapper.log
 echo Radarr Event: %radarr_eventtype% >> %~dp0wrapper.log
 
-:: Handle the Test event from Sonarr/Radarr
+:: Handle the Test event from Sonarr/Radarr (WIP)
 if "%sonarr_eventtype%"=="Test" (
 	set SCRIPT_DIR=%~dp0
 	set PYTHON_CMD=python
@@ -66,7 +66,7 @@ echo   --no-update-check          Skip the GitHub update check.
 echo   --update                   Check for updates and exit.
 echo   --help, -h, /?, ?          Show this help message.
 echo.
-echo Integration:
+echo Integration (WIP):
 echo   The script auto-detects Sonarr and Radarr environments.
 echo.
 exit /b 0

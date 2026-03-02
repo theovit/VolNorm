@@ -3,7 +3,7 @@
 Media-Audio-Leveler: A professional-grade Python automation suite for audio normalization.
 
 This script uses FFmpeg to perform two-pass audio normalization based on EBU R128 standards.
-It's designed for integration with media servers like Sonarr and Radarr, and can also be run in batch mode.
+It's designed for integration with media servers like Sonarr and Radarr (WIP), and can also be run in batch mode.
 """
 
 import os
@@ -296,10 +296,10 @@ def main():
     # --- Mode Detection ---
     if os.environ.get('sonarr_episodefile_path'):
         file_to_process = os.environ.get('sonarr_episodefile_path')
-        logging.info(f"Sonarr integration detected. Processing file: {file_to_process}")
+        logging.info(f"Sonarr integration detected (WIP). Processing file: {file_to_process}")
     elif os.environ.get('radarr_moviefile_path'):
         file_to_process = os.environ.get('radarr_moviefile_path')
-        logging.info(f"Radarr integration detected. Processing file: {file_to_process}")
+        logging.info(f"Radarr integration detected (WIP). Processing file: {file_to_process}")
     elif args.single_file:
         file_to_process = args.single_file
         logging.info(f"Single file mode: processing '{file_to_process}'")

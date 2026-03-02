@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Diagnostic script for Sonarr/Radarr custom script integration.
+# Diagnostic script for Sonarr/Radarr custom script integration (WIP).
 
 # --- Configuration ---
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" &>/dev/null && pwd)"
