@@ -64,22 +64,22 @@ log_divider
 
 # Check for FFmpeg and FFprobe
 log_message "Checking for FFmpeg and FFprobe..."
-FFMPEG_PATH=$(command -v ffmpeg)
-FFPROBE_PATH=$(command -v ffprobe)
+FFMPEG_PATH="/usr/bin/ffmpeg"
+FFPROBE_PATH="/usr/bin/ffprobe"
 
-if [ -x "$FFMPEG_PATH" ]; then
+if ls -l "$FFMPEG_PATH" &>/dev/null; then
     log_message "SUCCESS: ffmpeg found at '$FFMPEG_PATH'."
 else
-    log_message "ERROR: ffmpeg not found in PATH."
-    echo "ERROR: ffmpeg not found in PATH." >&2
+    log_message "ERROR: ffmpeg not found or no permissions at '$FFMPEG_PATH'."
+    echo "ERROR: ffmpeg not found or no permissions at '$FFMPEG_PATH'." >&2
     CHECKS_FAILED=1
 fi
 
-if [ -x "$FFPROBE_PATH" ]; then
+if ls -l "$FFPROBE_PATH" &>/dev/null; then
     log_message "SUCCESS: ffprobe found at '$FFPROBE_PATH'."
 else
-    log_message "ERROR: ffprobe not found in PATH."
-    echo "ERROR: ffprobe not found in PATH." >&2
+    log_message "ERROR: ffprobe not found or no permissions at '$FFPROBE_PATH'."
+    echo "ERROR: ffprobe not found or no permissions at '$FFPROBE_PATH'." >&2
     CHECKS_FAILED=1
 fi
 log_divider
@@ -87,8 +87,8 @@ log_divider
 # Run Companion Python Script if 'Test' event
 if [ "$EVENT_TYPE" = "Test" ]; then
     log_message "Test event detected. Running companion Python script..."
-    if [ -x "$TEST_ENV_SCRIPT" ]; then
-        "$TEST_ENV_SCRIPT"
+    if [ -f "$TEST_ENV_SCRIPT" ]; then
+        "$VENV_PYTHON" "$TEST_ENV_SCRIPT"
         if [ $? -eq 0 ]; then
             log_message "SUCCESS: Companion Python script executed successfully."
         else
@@ -97,8 +97,8 @@ if [ "$EVENT_TYPE" = "Test" ]; then
             CHECKS_FAILED=1
         fi
     else
-        log_message "ERROR: Companion script 'test_env.py' not found or not executable."
-        echo "ERROR: 'test_env.py' not found or not executable." >&2
+        log_message "ERROR: Companion script 'test_env.py' not found."
+        echo "ERROR: 'test_env.py' not found." >&2
         CHECKS_FAILED=1
     fi
     log_divider

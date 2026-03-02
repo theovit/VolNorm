@@ -20,6 +20,8 @@ import urllib.request
 # --- Configuration ---
 VERSION = "1.2.1"
 GITHUB_REPO_URL = "https://api.github.com/repos/theovit/VolNorm/releases/latest"
+FFMPEG_PATH = "/usr/bin/ffmpeg"
+FFPROBE_PATH = "/usr/bin/ffprobe"
 LOUDNESS_TARGETS = {
     "I": -24.0,
     "LRA": 13.0,
@@ -113,7 +115,7 @@ def get_media_files(directory):
 def get_stream_info(file_path):
     """Uses ffprobe to get media file stream information."""
     command = [
-        'ffprobe',
+        FFPROBE_PATH,
         '-v', 'quiet',
         '-print_format', 'json',
         '-show_format',
@@ -145,7 +147,7 @@ def process_file(file_path):
         start_time = time.time()
         
         ffmpeg_cmd_pass1 = [
-            'ffmpeg', '-hide_banner', '-i', str(file_path),
+            FFMPEG_PATH, '-hide_banner', '-i', str(file_path),
             '-vn', '-sn', '-dn', '-map', '0:a',
             '-af', f"loudnorm=I={LOUDNESS_TARGETS['I']}:LRA={LOUDNESS_TARGETS['LRA']}:tp={LOUDNESS_TARGETS['TP']}:print_format=json",
             '-f', 'null', '-'
@@ -209,7 +211,7 @@ def process_file(file_path):
             return "failed", 0
             
         ffmpeg_cmd_pass2 = [
-            'ffmpeg', '-y', '-hide_banner', '-i', str(file_path),
+            FFMPEG_PATH, '-y', '-hide_banner', '-i', str(file_path),
             '-map', '0:v', '-map', '0:a', '-c:v', 'copy', '-c:a', original_audio_codec, '-sample_fmt', original_sample_fmt, '-ar', original_sample_rate,
             '-af', f"loudnorm=I={LOUDNESS_TARGETS['I']}:LRA={LOUDNESS_TARGETS['LRA']}:tp={LOUDNESS_TARGETS['TP']}:measured_I={measured['input_i']}:measured_LRA={measured['input_lra']}:measured_tp={measured['input_tp']}:measured_thresh={measured['input_thresh']}:offset={measured['target_offset']}",
             '-strict', '-2',
