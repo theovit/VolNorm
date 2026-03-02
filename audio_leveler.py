@@ -15,13 +15,14 @@ import logging
 import re
 from pathlib import Path
 import time
+import shutil
 import urllib.request
 
 # --- Configuration ---
 VERSION = "1.2.1"
 GITHUB_REPO_URL = "https://api.github.com/repos/theovit/VolNorm/releases/latest"
-FFMPEG_PATH = "/usr/bin/ffmpeg"
-FFPROBE_PATH = "/usr/bin/ffprobe"
+FFMPEG_PATH = shutil.which('ffmpeg')
+FFPROBE_PATH = shutil.which('ffprobe')
 LOUDNESS_TARGETS = {
     "I": -24.0,
     "LRA": 13.0,
@@ -269,19 +270,19 @@ def cleanup_directory(directory):
             
 def main():
     """Main execution function."""
+    # Test Detection
+    if os.environ.get('sonarr_eventtype') == 'Test' or os.environ.get('radarr_eventtype') == 'Test':
+        logging.info("Diagnostic: Success")
+        sys.exit(0)
+
     parser = argparse.ArgumentParser(description="Media Audio Leveler")
     parser.add_argument('--file', dest='single_file', type=str, help='Process a single media file.')
     parser.add_argument('--batch', dest='batch_dir', type=str, help='Run in batch mode on a directory.')
     parser.add_argument('--cleanup', action='store_true', help='Scan for and remove orphaned temporary files.')
     parser.add_argument('--no-update-check', action='store_true', help='Skip the GitHub update check.')
     parser.add_argument('--update', action='store_true', help='Check for updates and exit.')
-    parser.add_argument('--arr-test', dest='arr_test', type=str, help=argparse.SUPPRESS) # Hidden from help
     
     args = parser.parse_args()
-
-    if args.arr_test:
-        logging.info(f"{args.arr_test} test successful.")
-        sys.exit(0)
 
     if args.update:
         check_for_updates()
