@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 Media-Audio-Leveler: A professional-grade Python automation suite for audio normalization.
 
@@ -121,17 +122,6 @@ def get_stream_info(file_path):
     ]
     result = subprocess.run(command, capture_output=True, text=True, check=True, encoding='utf-8')
     return json.loads(result.stdout)
-
-def parse_loudnorm_output(output):
-    """Parses the output of the loudnorm filter to extract loudness stats."""
-    stats = {}
-    for line in output.splitlines():
-        if 'Input Integrated' in line:
-            stats['I'] = float(re.search(r'I:\s+(-?\d+\.\d+)', line).group(1))
-        if 'Input LRA' in line:
-            stats['LRA'] = float(re.search(r'LRA:\s+(-?\d+\.\d+)', line).group(1))
-    return stats
-
 
 def format_loudness_info(i, lra, tp, source):
     """Formats loudness information for logging."""
@@ -314,7 +304,7 @@ def main():
         logging.info(f"Batch mode activated for directory: {args.batch_dir}")
         if args.cleanup:
             cleanup_directory(args.batch_dir)
-            
+        
         files = get_media_files(args.batch_dir)
         logging.info(f"Found {len(files)} media files to process.")
         
@@ -333,9 +323,11 @@ def main():
         logging.info(f"Files Failed: {summary['failed']}")
         logging.info(f"Total Time Saved by Skipping: {summary['time_saved']:.2f}s")
         logging.info(f"Total Processing Time: {summary['total_time']:.2f}s")
+        sys.exit(0) # Exit after batch processing
         
     elif args.cleanup:
-         cleanup_directory('.') # Default to current directory if no batch dir is specified
+         cleanup_directory(args.batch_dir or '.')
+         sys.exit(0)
          
     else:
         logging.info("No media file path provided via environment variables, --file, or --batch flag. Exiting.")
