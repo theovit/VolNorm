@@ -156,7 +156,7 @@ def process_file(file_path):
         
         ffmpeg_cmd_pass1 = [
             'ffmpeg', '-hide_banner', '-i', str(file_path),
-            '-map', '0:v', '-map', '0:a', '-c:v', 'copy',
+            '-vn', '-sn', '-dn', '-map', '0:a',
             '-af', f"loudnorm=I={LOUDNESS_TARGETS['I']}:LRA={LOUDNESS_TARGETS['LRA']}:tp={LOUDNESS_TARGETS['TP']}:print_format=json",
             '-f', 'null', '-'
         ]
