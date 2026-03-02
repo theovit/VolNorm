@@ -5,6 +5,7 @@
 import sys
 import subprocess
 import os
+import shutil
 
 # --- Configuration ---
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -27,9 +28,15 @@ try:
     log_message("SUCCESS: Write test successful.")
 
     log_message("Checking ffmpeg version...")
-    result = subprocess.run(["ffmpeg", "-version"], capture_output=True, text=True, check=True)
-    log_message("SUCCESS: ffmpeg -version command succeeded.")
-    log_message(f"FFmpeg output:\n{result.stdout.splitlines()[0]}")
+    ffmpeg_path = shutil.which('ffmpeg')
+    if ffmpeg_path:
+        log_message(f"Found ffmpeg at: {ffmpeg_path}")
+        result = subprocess.run([ffmpeg_path, "-version"], capture_output=True, text=True, check=True)
+        log_message("SUCCESS: ffmpeg -version command succeeded.")
+        log_message(f"FFmpeg output:\n{result.stdout.splitlines()[0]}")
+    else:
+        log_message("ERROR: 'ffmpeg' command not found.")
+        sys.exit(1)
 
 except FileNotFoundError:
     log_message("ERROR: 'ffmpeg' command not found.")

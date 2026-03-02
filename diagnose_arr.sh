@@ -63,25 +63,20 @@ fi
 log_divider
 
 # Check for FFmpeg and FFprobe
-log_message "Searching for FFmpeg and FFprobe..."
-FFMPEG_PATHS=$(find /usr/bin /bin /usr/local/bin -name "ffmpeg" -type f -executable 2>/dev/null)
-FFPROBE_PATHS=$(find /usr/bin /bin /usr/local/bin -name "ffprobe" -type f -executable 2>/dev/null)
-
-if [ -n "$FFMPEG_PATHS" ]; then
-    log_message "Found FFmpeg at:"
-    echo "$FFMPEG_PATHS" | while read -r line; do log_message "  - $line"; done
+log_message "Checking for FFmpeg and FFprobe..."
+if command -v ffmpeg &>/dev/null; then
+    log_message "SUCCESS: ffmpeg found in PATH."
 else
-    log_message "ERROR: ffmpeg not found in search paths."
-    echo "ERROR: ffmpeg not found in search paths." >&2
+    log_message "ERROR: ffmpeg not found in PATH."
+    echo "ERROR: ffmpeg not found in PATH." >&2
     CHECKS_FAILED=1
 fi
 
-if [ -n "$FFPROBE_PATHS" ]; then
-    log_message "Found FFprobe at:"
-    echo "$FFPROBE_PATHS" | while read -r line; do log_message "  - $line"; done
+if command -v ffprobe &>/dev/null; then
+    log_message "SUCCESS: ffprobe found in PATH."
 else
-    log_message "ERROR: ffprobe not found in search paths."
-    echo "ERROR: ffprobe not found in search paths." >&2
+    log_message "ERROR: ffprobe not found in PATH."
+    echo "ERROR: ffprobe not found in PATH." >&2
     CHECKS_FAILED=1
 fi
 log_divider
