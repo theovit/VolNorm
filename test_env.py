@@ -19,6 +19,7 @@ def log_message(message):
 try:
     log_message(f"Python Version: {sys.version}")
     log_message(f"Python Executable: {sys.executable}")
+    log_message(f"PATH: {os.environ.get('PATH')}")
 
     log_message("Testing write permissions...")
     with open(LOG_FILE, "a") as f:

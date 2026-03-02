@@ -63,23 +63,25 @@ fi
 log_divider
 
 # Check for FFmpeg and FFprobe
-log_message "Checking for FFmpeg and FFprobe..."
-FFMPEG_PATH="/usr/bin/ffmpeg"
-FFPROBE_PATH="/usr/bin/ffprobe"
+log_message "Searching for FFmpeg and FFprobe..."
+FFMPEG_PATHS=$(find /usr/bin /bin /usr/local/bin -name "ffmpeg" -type f -executable 2>/dev/null)
+FFPROBE_PATHS=$(find /usr/bin /bin /usr/local/bin -name "ffprobe" -type f -executable 2>/dev/null)
 
-if ls -l "$FFMPEG_PATH" &>/dev/null; then
-    log_message "SUCCESS: ffmpeg found at '$FFMPEG_PATH'."
+if [ -n "$FFMPEG_PATHS" ]; then
+    log_message "Found FFmpeg at:"
+    echo "$FFMPEG_PATHS" | while read -r line; do log_message "  - $line"; done
 else
-    log_message "ERROR: ffmpeg not found or no permissions at '$FFMPEG_PATH'."
-    echo "ERROR: ffmpeg not found or no permissions at '$FFMPEG_PATH'." >&2
+    log_message "ERROR: ffmpeg not found in search paths."
+    echo "ERROR: ffmpeg not found in search paths." >&2
     CHECKS_FAILED=1
 fi
 
-if ls -l "$FFPROBE_PATH" &>/dev/null; then
-    log_message "SUCCESS: ffprobe found at '$FFPROBE_PATH'."
+if [ -n "$FFPROBE_PATHS" ]; then
+    log_message "Found FFprobe at:"
+    echo "$FFPROBE_PATHS" | while read -r line; do log_message "  - $line"; done
 else
-    log_message "ERROR: ffprobe not found or no permissions at '$FFPROBE_PATH'."
-    echo "ERROR: ffprobe not found or no permissions at '$FFPROBE_PATH'." >&2
+    log_message "ERROR: ffprobe not found in search paths."
+    echo "ERROR: ffprobe not found in search paths." >&2
     CHECKS_FAILED=1
 fi
 log_divider
