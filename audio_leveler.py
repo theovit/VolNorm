@@ -143,53 +143,70 @@ def process_file(file_path):
         os.remove(tmp_path)
 
     try:
-        # --- Pass 1: Analyze Loudness ---
+# --- Pass 1: Analyze Loudness for ALL audio tracks ---
         logging.info(f"Pass 1: Analyzing '{file_path.name}'")
         start_time = time.time()
         
-        ffmpeg_cmd_pass1 = [
-            FFMPEG_PATH, '-hide_banner', '-i', str(file_path),
-            '-vn', '-sn', '-dn', '-map', '0:a',
-            '-af', f"loudnorm=I={LOUDNESS_TARGETS['I']}:LRA={LOUDNESS_TARGETS['LRA']}:tp={LOUDNESS_TARGETS['TP']}:print_format=json",
-            '-f', 'null', '-'
-        ]
-        
-        result_pass1 = subprocess.run(ffmpeg_cmd_pass1, capture_output=True, text=True, encoding='utf-8')
-        
-        if result_pass1.returncode != 0:
-            logging.error(f"FFmpeg Pass 1 failed for {file_path.name}. Error:\n{result_pass1.stderr}")
-            return "failed", 0
-
-        # Extract measured values from stderr
-        stderr_output = result_pass1.stderr
-        json_start_index = stderr_output.rfind('{')
-        json_end_index = stderr_output.rfind('}')
-        
-        if json_start_index == -1 or json_end_index == -1:
-            logging.error(f"Could not find JSON stats in FFmpeg output for {file_path.name}. Full output:\n{stderr_output}")
-            return "failed", 0
-
-        measured_stats_str = stderr_output[json_start_index:json_end_index+1]
-        
         try:
-            measured = json.loads(measured_stats_str)
-        except json.JSONDecodeError:
-            logging.error(f"Failed to parse JSON from FFmpeg output for {file_path.name}. String was:\n{measured_stats_str}")
+            stream_info = get_stream_info(file_path)
+            audio_streams = [s for s in stream_info['streams'] if s['codec_type'] == 'audio']
+            if not audio_streams:
+                logging.error(f"No audio streams found in {file_path.name}")
+                return "failed", 0
+        except Exception as e:
+            logging.error(f"Could not get stream info for {file_path.name}: {e}")
             return "failed", 0
-        
-        input_i = float(measured['input_i'])
-        input_lra = float(measured['input_lra'])
-        input_tp = float(measured['input_tp'])
 
-        logging.info(format_loudness_info(input_i, input_lra, input_tp, "BEFORE"))
+        measured_tracks = []
+        skip_file = True
+
+        for idx, stream in enumerate(audio_streams):
+            stream_index = stream['index']
+            logging.info(f"Analyzing audio track {idx} (stream index {stream_index})")
+            
+            ffmpeg_cmd_pass1 = [
+                FFMPEG_PATH, '-hide_banner', '-i', str(file_path),
+                '-vn', '-sn', '-dn', '-map', f'0:a:{idx}',
+                '-af', f"loudnorm=I={LOUDNESS_TARGETS['I']}:LRA={LOUDNESS_TARGETS['LRA']}:tp={LOUDNESS_TARGETS['TP']}:print_format=json",
+                '-f', 'null', '-'
+            ]
+            
+            result_pass1 = subprocess.run(ffmpeg_cmd_pass1, capture_output=True, text=True, encoding='utf-8')
+            
+            if result_pass1.returncode != 0:
+                logging.error(f"FFmpeg Pass 1 failed for track {idx} of {file_path.name}.")
+                return "failed", 0
+
+            stderr_output = result_pass1.stderr
+            json_start_index = stderr_output.rfind('{')
+            json_end_index = stderr_output.rfind('}')
+            
+            if json_start_index == -1 or json_end_index == -1:
+                logging.error(f"Could not find JSON stats for track {idx} in {file_path.name}.")
+                return "failed", 0
+
+            try:
+                measured = json.loads(stderr_output[json_start_index:json_end_index+1])
+                measured_tracks.append(measured)
+            except json.JSONDecodeError:
+                return "failed", 0
+            
+            input_i = float(measured['input_i'])
+            input_lra = float(measured['input_lra'])
+            input_tp = float(measured['input_tp'])
+            logging.info(format_loudness_info(input_i, input_lra, input_tp, f"TRACK {idx} BEFORE"))
+
+            # If even ONE track needs normalization, we do not skip the file
+            if not ((LOUDNESS_TARGETS['I'] - LOUDNESS_TOLERANCE) <= input_i <= (LOUDNESS_TARGETS['I'] + LOUDNESS_TOLERANCE) and input_lra <= LOUDNESS_TARGETS['LRA']):
+                skip_file = False
 
         # --- Efficiency Gate ---
-        if (LOUDNESS_TARGETS['I'] - LOUDNESS_TOLERANCE) <= input_i <= (LOUDNESS_TARGETS['I'] + LOUDNESS_TOLERANCE) and input_lra <= LOUDNESS_TARGETS['LRA']:
+        if skip_file:
             time_saved = time.time() - start_time
-            logging.info(f"SKIP: '{file_path.name}' is already within loudness targets. Time saved: {time_saved:.2f}s")
+            logging.info(f"SKIP: All audio tracks in '{file_path.name}' are already within targets. Time saved: {time_saved:.2f}s")
             return "skipped", time_saved
 
-        # --- Pass 2: Apply Normalization ---
+        # --- Pass 2: Apply Normalization to ALL tracks dynamically ---
         logging.info(f"Pass 2: Normalizing '{file_path.name}'")
         
         output_format = FORMAT_MAP.get(file_path.suffix.lower())
@@ -197,31 +214,44 @@ def process_file(file_path):
             logging.error(f"Unsupported file extension: {file_path.suffix}")
             return "failed", 0
 
-        # Preserve the original audio codec, sample format and sample rate
-        try:
-            stream_info = get_stream_info(file_path)
-            audio_streams = [s for s in stream_info['streams'] if s['codec_type'] == 'audio']
-            original_audio_codec = audio_streams[0]['codec_name'] if audio_streams else None
-            original_sample_fmt = audio_streams[0]['sample_fmt'] if audio_streams else None
-            original_sample_rate = audio_streams[0]['sample_rate'] if audio_streams else None
-            if not original_audio_codec or not original_sample_fmt or not original_sample_rate:
-                logging.error(f"Could not determine original audio properties for {file_path.name}")
-                return "failed", 0
-        except Exception as e:
-            logging.error(f"Could not get stream info for {file_path.name}: {e}")
-            return "failed", 0
-            
+        # Build dynamic arguments for video, subtitles, data, and audio tracks
         ffmpeg_cmd_pass2 = [
             FFMPEG_PATH, '-y', '-hide_banner', '-i', str(file_path),
-            '-map', '0:v', '-map', '0:a', '-c:v', 'copy', '-c:a', original_audio_codec, '-sample_fmt', original_sample_fmt, '-ar', original_sample_rate,
-            '-af', f"loudnorm=I={LOUDNESS_TARGETS['I']}:LRA={LOUDNESS_TARGETS['LRA']}:tp={LOUDNESS_TARGETS['TP']}:measured_I={measured['input_i']}:measured_LRA={measured['input_lra']}:measured_tp={measured['input_tp']}:measured_thresh={measured['input_thresh']}:offset={measured['target_offset']}",
-            '-strict', '-2',
-            '-f', output_format,
-            str(tmp_path)
+            '-map', '0:v', '-c:v', 'copy'
         ]
         
-        result_pass2 = subprocess.run(ffmpeg_cmd_pass2, capture_output=True, text=True, encoding='utf-8')
+        # Safely copy subtitles and data streams if they exist
+        if any(s['codec_type'] == 'subtitle' for s in stream_info['streams']):
+            ffmpeg_cmd_pass2.extend(['-map', '0:s', '-c:s', 'copy'])
+        if any(s['codec_type'] == 'data' for s in stream_info['streams']):
+            ffmpeg_cmd_pass2.extend(['-map', '0:d', '-c:d', 'copy'])
+
+        # Construct specific mapping and filters for each individual audio stream
+        filter_complex_parts = []
+        for idx, stream in enumerate(audio_streams):
+            m = measured_tracks[idx]
+            codec = stream.get('codec_name', 'opus')
+            
+            # Map this specific track out
+            ffmpeg_cmd_pass2.extend(['-map', f'[out_a{idx}]', f'-c:a:{idx}', codec])
+            
+            # Add explicit audio property definitions per track if available
+            if stream.get('sample_fmt'):
+                ffmpeg_cmd_pass2.extend([f'-sample_fmt:{idx}', stream['sample_fmt']])
+            if stream.get('sample_rate'):
+                ffmpeg_cmd_pass2.extend([f'-ar:{idx}', stream['sample_rate']])
+                
+            # Append complex filter segment for this track
+            filter_complex_parts.append(
+                f"[0:a:{idx}]loudnorm=I={LOUDNESS_TARGETS['I']}:LRA={LOUDNESS_TARGETS['LRA']}:tp={LOUDNESS_TARGETS['TP']}:"
+                f"measured_I={m['input_i']}:measured_LRA={m['input_lra']}:measured_tp={m['input_tp']}:"
+                f"measured_thresh={m['input_thresh']}:offset={m['target_offset']}[out_a{idx}]"
+            )
+
+        ffmpeg_cmd_pass2.extend(['-filter_complex', ';'.join(filter_complex_parts)])
+        ffmpeg_cmd_pass2.extend(['-strict', '-2', '-f', output_format, str(tmp_path)])
         
+        result_pass2 = subprocess.run(ffmpeg_cmd_pass2, capture_output=True, text=True, encoding='utf-8')        
         if result_pass2.returncode != 0:
             logging.error(f"FFmpeg Pass 2 failed for {file_path.name}. Error:\n{result_pass2.stderr}")
             return "failed", 0
