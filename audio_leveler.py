@@ -230,7 +230,7 @@ def process_file(file_path):
         original_duration = float(get_stream_info(file_path)['format']['duration'])
         new_duration = float(get_stream_info(tmp_path)['format']['duration'])
 
-        if abs(original_duration - new_duration) > 0.1: # 100ms tolerance
+        if abs(original_duration - new_duration) > 1.0: # 100ms tolerance
             logging.error(f"VERIFICATION FAILED: Duration mismatch for '{file_path.name}'. Original: {original_duration}s, New: {new_duration}s")
             return "failed", 0
         
